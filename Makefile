@@ -1,0 +1,21 @@
+CC = gcc
+CFLAGS = -std=c99 -pedantic -Wall -Wextra -Werror -Wvla
+
+LDFLAGS = -fsanitize=address -g
+
+SRCS = src/main.c src/chip8.c src/utils/rom_loader.c
+
+OBJS = $(SRCS:.c=.o)
+
+TARGET=chip8
+
+all: $(TARGET)
+
+$(TARGET): $(OBJS)
+	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJS) -o $(TARGET)
+
+test: $(TARGET)
+	./$(TARGET) roms/BC_test.ch8
+
+clean:
+	$(RM) $(OBJS) $(TARGET)
