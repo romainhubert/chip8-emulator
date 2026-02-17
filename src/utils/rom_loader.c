@@ -10,7 +10,7 @@ static int compute_file_len(FILE* file)
     return romLen;
 }
 
-int load_rom(struct chip8 state, char* path)
+int load_rom(struct chip8* state, char* path)
 {
     printf("Loading rom %s...\n", path);
     FILE *f = fopen(path, "rb");
@@ -21,7 +21,7 @@ int load_rom(struct chip8 state, char* path)
 
     size_t fileLen = compute_file_len(f);
 
-    if(fread(state.memory + 200, 1, fileLen, f) != fileLen) {
+    if(fread(state->memory + 0x200, 1, fileLen, f) != fileLen) {
         printf("Failed to read rom content\n");
         return 0;
     }

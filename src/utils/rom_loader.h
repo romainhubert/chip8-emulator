@@ -3,6 +3,6 @@
 
 #include "../chip8.h"
 
-int load_rom(struct chip8 state, char* path);
+int load_rom(struct chip8* state, char* path);
 
 #endif // ROM_LOADER_H
