@@ -6,7 +6,7 @@
 struct chip8 {
     uint8_t memory[4096];
     uint16_t pc;
-    
+
     uint16_t stack[16];
     uint8_t stack_pointer;
 
@@ -19,7 +19,12 @@ struct chip8 {
     uint8_t display[32][64];
 };
 
-void chip8_init(struct chip8* state, char* path);
+int chip8_init(struct chip8* state, char* path);
+
+void chip8_start_loop(struct chip8* state);
+
+uint16_t chip8_fetch_instruction(struct chip8* state);
 
 
+void chip8_execute_instruction(struct chip8* state, uint16_t instruction);
 #endif // CHIP_8

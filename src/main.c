@@ -9,6 +9,8 @@ int main(int argc, char** argv){
         return 1;
     }
     struct chip8 state = {0};
-    chip8_init(&state, argv[1]);
+    if(chip8_init(&state, argv[1])){
+        chip8_start_loop(&state);
+    }
 
 }
