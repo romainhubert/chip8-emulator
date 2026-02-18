@@ -1,7 +1,10 @@
 #include <SDL2/SDL.h>
 #include <stdio.h>
+#include "chip8.h"
 
 static SDL_Window* window = NULL;
+static SDL_Renderer* renderer = NULL;
+static SDL_Texture* texture = NULL;
 
 int create_window(){
     if(SDL_Init(SDL_INIT_VIDEO) != 0){
@@ -17,26 +20,55 @@ int create_window(){
         return 0;
     }
 
+    renderer = SDL_CreateRenderer(
+        window,
+        -1,
+        SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC
+    );
+
+    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0");
+    SDL_RenderSetLogicalSize(renderer, 64, 32);
+
+    texture = SDL_CreateTexture(
+        renderer,
+        SDL_PIXELFORMAT_RGBA8888,
+        SDL_TEXTUREACCESS_STREAMING,
+        64,
+        32
+    );
     return 1;
 }
 
-int update_display(){
-    SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, 0);
-
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+static void update_texture(struct chip8* state){
+    uint32_t pixels[32 * 64];
+    for(int y = 0; y < 32; y++){
+        for(int x = 0; x < 64; x++){
+            pixels[y * 64 + x] = state->display[y][x] ? 0xFFFFFFFF : 0x000000FF;
+        }
+    }
+    SDL_UpdateTexture(texture, NULL, pixels, 64 * sizeof(uint32_t));
     SDL_RenderClear(renderer);
+    SDL_RenderCopy(renderer, texture, NULL, NULL);
     SDL_RenderPresent(renderer);
-    SDL_Event e;
 
+    state->draw_flag = 0;
+}
+
+int update_display(struct chip8* state){
+    SDL_Event e;
     while (SDL_PollEvent(&e)) {
         if (e.type == SDL_QUIT)
             return 0;
     }
-    SDL_Delay(16);
+    if(state->draw_flag){
+        update_texture(state);
+    }
     return 1;
 }
 
 void destroy_display(){
+    SDL_DestroyTexture(texture);
+    SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
 }

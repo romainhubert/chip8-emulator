@@ -13,5 +13,5 @@ int main(int argc, char** argv){
     if(chip8_init(&state, argv[1]) && create_window()){
         chip8_start_loop(&state);
     }
-    destroy_display(); 
+    destroy_display();
 }

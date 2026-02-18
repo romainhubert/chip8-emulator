@@ -17,6 +17,7 @@ struct chip8 {
     uint8_t registers[16];
 
     uint8_t display[32][64];
+    uint8_t draw_flag;
 };
 
 int chip8_init(struct chip8* state, char* path);

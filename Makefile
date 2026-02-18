@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -std=c99 -pedantic -Wall -Wextra -Werror -Wvla
+CFLAGS = -std=c99 -pedantic -Wall -Wextra -Werror -Wvla -g
 
 LDFLAGS = -fsanitize=address -g -lSDL2
 

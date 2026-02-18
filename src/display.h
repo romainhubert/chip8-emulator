@@ -3,7 +3,7 @@
 
 int create_window();
 
-int update_display();
+int update_display(struct chip8* state);
 
 void destroy_display();
 
