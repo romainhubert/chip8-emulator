@@ -1,5 +1,6 @@
 #include "chip8.h"
 #include <stdio.h>
+#include <stdlib.h>
 
 static void clear_display(struct chip8* state){
     for(int y = 0; y < 32; y++){
@@ -56,10 +57,24 @@ void execute_instruction(struct chip8* state, struct decoded_instruction instruc
         case 0x0:
             if(instruction.NNN == 0x0E0){
                 clear_display(state);
+            }else if(instruction.NNN == 0x0EE){
+                if(state->stack_pointer == 0){
+                    fprintf(stderr, "Trying to return from subroutine without calling one first");
+                    exit(1);
+                }
+                state->pc = state->stack[state->stack_pointer--];
             }
             break;
         case 0x1:
             printf("jumped to %04X\n", instruction.NNN);
+            state->pc = instruction.NNN;
+            break;
+        case 0x2:
+            if(state->stack_pointer == 15) {
+                fprintf(stderr, "StackOverflowException");
+                exit(1);
+            }
+            state->stack[++state->stack_pointer] = state->pc;
             state->pc = instruction.NNN;
             break;
         case 0x6:
