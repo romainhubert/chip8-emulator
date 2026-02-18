@@ -27,7 +27,7 @@ static void draw_instruction(struct chip8* state, uint8_t X, uint8_t Y, uint8_t 
         if(y >= 32) break;
 
         for(int bit = 0; bit < 8; bit++){
-            if(xpos >= 64) break;
+            if(x >= 64) break;
 
             uint8_t sprite_pixel = (sprite_data & (0x80 >> bit)) != 0;
 
@@ -35,14 +35,54 @@ static void draw_instruction(struct chip8* state, uint8_t X, uint8_t Y, uint8_t 
                 if(state->display[y][x] == 1){
                     state->display[y][x] = 0;
                     state->registers[0xF] = 1;
+                }else{
+                    state->display[y][x] = 1;
                 }
-                state->display[y][x] = 1;
             }
 
             x++;
         }
     }
     state->draw_flag = 1;
+}
+
+static void execute_logic_arith_instruction(struct chip8* state, struct decoded_instruction instruction){
+    switch(instruction.N){
+        case 0:
+            state->registers[instruction.X] = state->registers[instruction.Y];
+            break;
+        case 1:
+            state->registers[instruction.X] = state->registers[instruction.X] | state->registers[instruction.Y];
+            break;
+        case 2:
+            state->registers[instruction.X] = state->registers[instruction.X] & state->registers[instruction.Y];
+            break;
+        case 3:
+            state->registers[instruction.X] = state->registers[instruction.X] ^ state->registers[instruction.Y];
+            break;
+        case 4:
+            state->registers[0xF] = state->registers[instruction.X] + state->registers[instruction.Y] > 255;
+            state->registers[instruction.X] = state->registers[instruction.X] + state->registers[instruction.Y];
+            break;
+        case 5:
+            state->registers[0xF] = state->registers[instruction.X] > state->registers[instruction.Y];
+            state->registers[instruction.X] = state->registers[instruction.X] - state->registers[instruction.Y];
+            break;
+        case 6:
+            state->registers[instruction.X] = state->registers[instruction.Y];
+            state->registers[0xF] = state->registers[instruction.X] & 0x1;
+            state->registers[instruction.X] = state->registers[instruction.X] >> 1;
+            break;
+        case 7:
+            state->registers[0xF] = state->registers[instruction.X] < state->registers[instruction.Y];
+            state->registers[instruction.X] = state->registers[instruction.Y] - state->registers[instruction.X];
+            break;
+        case 8:
+            state->registers[instruction.X] = state->registers[instruction.Y];
+            state->registers[0xF] = (state->registers[instruction.X] >> 7) & 0x1;
+            state->registers[instruction.X] = state->registers[instruction.X] << 1;
+            break;
+    }
 }
 
 void execute_instruction(struct chip8* state, struct decoded_instruction instruction){
@@ -77,17 +117,78 @@ void execute_instruction(struct chip8* state, struct decoded_instruction instruc
             state->stack[++state->stack_pointer] = state->pc;
             state->pc = instruction.NNN;
             break;
+        case 0x3:
+            if(state->registers[instruction.X] == instruction.NN){
+                state->pc+=2;
+            }
+            break;
+        case 0x4:
+            if(state->registers[instruction.X] != instruction.NN){
+                state->pc+=2;
+            }
+            break;
+        case 0x5:
+            if(state->registers[instruction.X] == state->registers[instruction.Y]){
+                state->pc+=2;
+            }
+            break;
         case 0x6:
             state->registers[instruction.X] = instruction.NN;
             break;
         case 0x7:
             state->registers[instruction.X] += instruction.NN;
             break;
+        case 0x8:
+            execute_logic_arith_instruction(state, instruction);
+            break;
+        case 0x9:
+            if(state->registers[instruction.X] != state->registers[instruction.Y]){
+                state->pc+=2;
+            }
+            break;
         case 0xA:
             state->index_register = instruction.NNN;
+            break;
+        case 0xB:
+            state->pc = instruction.NNN + state->registers[0];
+            break;
+        case 0xC:
+            state->registers[instruction.X] = rand() & instruction.NN;
             break;
         case 0xD:
             draw_instruction(state, instruction.X, instruction.Y, instruction.N);
             break;
+        case 0xE:
+            /*if(instruction.NN == 0x9E){
+                
+            }*/
+            printf("todo input");
+            break;
+        case 0xF:
+            if(instruction.NN == 0x07){
+                state->registers[instruction.X] = state->delay_timer;
+            }else if(instruction.NN == 0x15){
+                state->delay_timer = state->registers[instruction.X];
+            }else if(instruction.NN == 0x18){
+                state->delay_timer = state->registers[instruction.X];
+            }else if(instruction.NN == 0x1E){
+                state->index_register += state->registers[instruction.X];
+                state->registers[0xF] = state->index_register >= 0x1000;
+            }else if(instruction.NN == 0x33){
+                state->memory[state->index_register] = state->registers[instruction.X]/100;
+                state->memory[state->index_register+1] = state->registers[instruction.X]/10 % 10;
+                state->memory[state->index_register+2] = state->registers[instruction.X] % 10;
+
+            }else if(instruction.NN == 0x55){
+                for(int i = 0; i <= instruction.X; i++){
+                    state->memory[state->index_register + i] = state->registers[i];
+                }
+            }else if(instruction.NN == 0x65){
+                for(int i = 0; i <= instruction.X; i++){
+                    state->registers[i] = state->memory[state->index_register + i];
+                }
+            }
+            break;
+
     }
 }
