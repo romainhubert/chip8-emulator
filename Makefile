@@ -15,7 +15,7 @@ $(TARGET): $(OBJS)
 	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJS) -o $(TARGET)
 
 test: $(TARGET)
-	./$(TARGET) roms/BC_test.ch8
+	./$(TARGET) roms/IBM_Logo.ch8
 
 clean:
 	$(RM) $(OBJS) $(TARGET)

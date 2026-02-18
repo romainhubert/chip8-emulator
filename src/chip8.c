@@ -10,22 +10,22 @@
 #include <SDL2/SDL.h>
 
 #define TIMER_UPDATE_PER_SECOND 60
-#define INSTRUCTIONS_PER_SECOND 1
+#define INSTRUCTIONS_PER_SECOND 700
 
-void draw_test_pattern(struct chip8* state) {
+/*void draw_test_pattern(struct chip8* state) {
     for (int y = 0; y < 32; y++) {
         for (int x = 0; x < 64; x++) {
             state->display[y][x] = y == 0 || y == 31 || x == 0 || x == 63;
         }
     }
     state->draw_flag = 1;
-}
+}*/
 
 int chip8_init(struct chip8* state, char* path)
 {
     state->pc = 0x200;
     state->draw_flag = 0;
-    draw_test_pattern(state);
+    //draw_test_pattern(state);
     return load_rom(state, path);
 }
 
