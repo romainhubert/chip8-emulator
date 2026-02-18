@@ -1,4 +1,5 @@
 #include "chip8.h"
+#include "display.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -8,7 +9,6 @@ static void clear_display(struct chip8* state){
             state->display[y][x] = 0;
         }
     }
-    printf("cleared display");
     state->draw_flag = 1;
 }
 
@@ -86,13 +86,6 @@ static void execute_logic_arith_instruction(struct chip8* state, struct decoded_
 }
 
 void execute_instruction(struct chip8* state, struct decoded_instruction instruction){
-    printf("%04X\n", instruction.instruction);
-    printf("opcode=%04X\n", instruction.opcode);
-    printf("X=%04X\n", instruction.X);
-    printf("Y=%04X\n", instruction.Y);
-    printf("N=%04X\n", instruction.N);
-    printf("NN=%04X\n", instruction.NN);
-    printf("NNN=%04X\n", instruction.NNN);
     switch(instruction.opcode){
         case 0x0:
             if(instruction.NNN == 0x0E0){
@@ -106,7 +99,6 @@ void execute_instruction(struct chip8* state, struct decoded_instruction instruc
             }
             break;
         case 0x1:
-            printf("jumped to %04X\n", instruction.NNN);
             state->pc = instruction.NNN;
             break;
         case 0x2:
@@ -159,10 +151,11 @@ void execute_instruction(struct chip8* state, struct decoded_instruction instruc
             draw_instruction(state, instruction.X, instruction.Y, instruction.N);
             break;
         case 0xE:
-            /*if(instruction.NN == 0x9E){
-                
-            }*/
-            printf("todo input");
+            if(instruction.NN == 0x9E && is_key_down(state->registers[instruction.X])){
+                state->pc+=2;
+            }else if(instruction.NN == 0xA1 && !is_key_down(state->registers[instruction.X])){
+                state->pc+=2;
+            }
             break;
         case 0xF:
             if(instruction.NN == 0x07){
@@ -174,6 +167,20 @@ void execute_instruction(struct chip8* state, struct decoded_instruction instruc
             }else if(instruction.NN == 0x1E){
                 state->index_register += state->registers[instruction.X];
                 state->registers[0xF] = state->index_register >= 0x1000;
+            }else if(instruction.NN == 0x0A){
+                bool key_found = false;
+                for(int i = 0; i < 16; i++){
+                    if(is_key_down(i)){
+                        state->registers[instruction.X] = i;
+                        key_found = true;
+                        break;
+                    }
+                }
+                if(!key_found){
+                    state->pc -= 2;
+                }
+            }else if(instruction.NN == 0x29){
+                state->index_register = 0x50 + (state->registers[instruction.X] * 5);
             }else if(instruction.NN == 0x33){
                 state->memory[state->index_register] = state->registers[instruction.X]/100;
                 state->memory[state->index_register+1] = state->registers[instruction.X]/10 % 10;
