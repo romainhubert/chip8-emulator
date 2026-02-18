@@ -3,7 +3,7 @@ CFLAGS = -std=c99 -pedantic -Wall -Wextra -Werror -Wvla -g
 
 LDFLAGS = -fsanitize=address -g -lSDL2
 
-SRCS = src/main.c src/chip8.c src/display.c src/utils/rom_loader.c
+SRCS = src/main.c src/chip8.c src/display.c src/exec_instruction.c src/utils/rom_loader.c
 
 OBJS = $(SRCS:.c=.o)
 
