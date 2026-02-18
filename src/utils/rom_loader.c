@@ -15,14 +15,14 @@ int load_rom(struct chip8* state, char* path)
     printf("Loading rom %s...\n", path);
     FILE *f = fopen(path, "rb");
     if(f == NULL){
-        printf("Failed to open rom\n");
+        fprintf(stderr, "Failed to open rom\n");
         return 0;
     }
 
     size_t fileLen = compute_file_len(f);
 
     if(fread(state->memory + 0x200, 1, fileLen, f) != fileLen) {
-        printf("Failed to read rom content\n");
+        fprintf(stderr, "Failed to read rom content\n");
         return 0;
     }
     fclose(f);

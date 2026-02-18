@@ -2,6 +2,7 @@
 
 #include "chip8.h"
 #include "utils/rom_loader.h"
+#include "display.h"
 
 #include <time.h>
 
@@ -33,22 +34,23 @@ static void update_timers(struct chip8* state){
 }
 
 void chip8_start_loop(struct chip8* state){
-    double lastTimer = get_time();
-    double lastInstructionTime = get_time();
-
-    while(1)
+    double last_timer = get_time();
+    double last_instruction_time = get_time();
+    int running = 1;
+    while(running)
     {
         double now = get_time();
 
-        if(now - lastTimer >= 1.0/TIMER_UPDATE_PER_SECOND){
+        if(now - last_timer >= 1.0/TIMER_UPDATE_PER_SECOND){
             update_timers(state);
-            lastTimer = get_time();
+            last_timer = get_time();
         }
-        if(now - lastInstructionTime >= 1.0/INSTRUCTIONS_PER_SECOND){
+        if(now - last_instruction_time >= 1.0/INSTRUCTIONS_PER_SECOND){
             uint16_t instruction = chip8_fetch_instruction(state);
             chip8_execute_instruction(state, instruction);
-            lastInstructionTime = get_time();
+            last_instruction_time = get_time();
         }
+        running = update_display();
     }
 }
 
